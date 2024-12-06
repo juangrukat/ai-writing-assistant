@@ -36,7 +36,15 @@
     },
     "criteria": {
         "last_type": "",
-        "last_set": "",
-        "last_file_path": ""
+        "last_set": {
+            "name": "",
+            "description": "",
+            "category": "",
+            "file_path": "",
+            "file_type": ""
+        },
+        "types": {
+            // Will be populated dynamically with available types
+        }
     }
 }

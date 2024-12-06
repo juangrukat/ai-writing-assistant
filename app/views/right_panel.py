@@ -22,7 +22,7 @@ class RightPanel(QWidget):
         layout = QVBoxLayout()
         self.tab_widget = QTabWidget()
 
-        self.select_criteria_tab = SelectCriteriaTab()
+        self.select_criteria_tab = SelectCriteriaTab(self.settings_manager)
         self.ai_feedback_tab = AIFeedbackTab()
         self.settings_tab = SettingsTab(self.settings_manager, self.ui_theme_manager)
 

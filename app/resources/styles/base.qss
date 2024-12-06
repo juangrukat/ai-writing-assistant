@@ -60,7 +60,3 @@ QTabBar::tab:selected {
     background-color: white;
     border-bottom: 2px solid #2196F3;
 }
-
-LoadingSpinner {
-    background-color: transparent;
-}

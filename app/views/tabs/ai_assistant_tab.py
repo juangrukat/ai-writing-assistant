@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
 from app.models.chat import Role
 from app.services.ai_assistant_service import AIAssistantService
 from app.services.settings_manager import SettingsManager
-from app.utils.ui_utils import show_warning, show_confirmation, render_markdown, LoadingStateManager
+from app.utils.ui_utils import show_warning, show_confirmation, render_markdown
 
 class AIAssistantTab(QWidget):
     """AI Assistant tab with chat interface."""
@@ -54,8 +54,6 @@ class AIAssistantTab(QWidget):
 
         layout.addLayout(input_layout)
         layout.addWidget(self.clear_button)
-
-        self.loading_manager = LoadingStateManager(self, self.send_button)
         
         self.setLayout(layout)
 
@@ -76,8 +74,6 @@ class AIAssistantTab(QWidget):
         self.send_button.setEnabled(False)
         self.send_button.setText("Sending...")
         self.clear_button.setEnabled(False)
-        
-        self.loading_manager.start_loading()
         
         self._append_message("System", "Processing request...")
         last_message_index = self.chat_display.document().lineCount() - 2
@@ -102,7 +98,6 @@ class AIAssistantTab(QWidget):
             self._append_message("System", f"Error: {str(e)}")
         
         finally:
-            self.loading_manager.stop_loading()
             self.message_input.setEnabled(True)
             self.send_button.setEnabled(True)
             self.send_button.setText("Send")

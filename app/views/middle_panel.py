@@ -5,10 +5,10 @@ from datetime import datetime
 from app.services.content_combiner_service import ContentCombinerService
 from app.services.ai_feedback_service import AIFeedbackService
 from app.services.settings_manager import SettingsManager
-from app.views.widgets.loading_spinner import LoadingSpinner
-from app.utils.ui_utils import LoadingStateManager
 
 class MiddlePanel(QWidget):
+    """Middle panel containing the text editor and controls."""
+    
     save_location_changed = pyqtSignal(str)
 
     def __init__(self, settings_manager: SettingsManager):
@@ -62,8 +62,6 @@ class MiddlePanel(QWidget):
 
         layout.addLayout(buttons_layout)
 
-        self.loading_manager = LoadingStateManager(self, self.submit_button)
-        
         self.setLayout(layout)
 
     def _restore_last_folder(self):
@@ -140,7 +138,6 @@ class MiddlePanel(QWidget):
         self.submit_button.setEnabled(False)
         self.submit_button.setText("Getting Feedback...")
         self.text_editor.setReadOnly(True)
-        self.loading_manager.start_loading()
         
         try:
             right_panel = self.window().right_panel
@@ -165,7 +162,6 @@ class MiddlePanel(QWidget):
                 else:
                     QMessageBox.warning(self, "Error", "Failed to get feedback from AI.")
         finally:
-            self.loading_manager.stop_loading()
             self.submit_button.setEnabled(True)
             self.submit_button.setText("Submit for Feedback")
             self.text_editor.setReadOnly(False)

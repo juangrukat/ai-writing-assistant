@@ -137,6 +137,11 @@ class AIAssistantTab(QWidget):
                     "Failed to clear chat history from storage."
                 )
             self.current_session_id = self.ai_assistant_service.initialize_chat()
+            
+            messages = self.ai_assistant_service.get_chat_messages(self.current_session_id)
+            for message in messages:
+                sender = "You" if message.role == Role.USER else "AI Assistant"
+                self._append_message(sender, message.content)
 
     def _remove_last_message(self, line_index: int):
         cursor = self.chat_display.textCursor()

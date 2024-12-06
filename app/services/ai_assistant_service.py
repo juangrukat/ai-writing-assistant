@@ -27,10 +27,22 @@ class AIAssistantService:
 
     def _load_chat_settings(self):
         """Load chat-related settings with defaults."""
-        self.welcome_message = self.settings_manager.get(
-            "chat.welcome_message",
-            CHAT_CONFIG["default_settings"]["welcome_message"]
+        # Get the current style setting
+        style = self.settings_manager.get(
+            "chat.welcome_style",
+            "formal"  # default style
         )
+        
+        # If style is not custom, get the predefined message
+        if style != "custom":
+            self.welcome_message = CHAT_CONFIG["message_types"]["welcome"][style]
+        else:
+            # If custom, get the user's custom message
+            self.welcome_message = self.settings_manager.get(
+                "chat.welcome_message",
+                CHAT_CONFIG["default_settings"]["welcome_message"]
+            )
+        
         self.display_welcome = self.settings_manager.get(
             "chat.display_welcome",
             CHAT_CONFIG["default_settings"]["display_welcome"]
@@ -45,7 +57,10 @@ class AIAssistantService:
         session = self.chat_storage.create_session()
         session_id = session.id
         
-        # Only add welcome message if enabled
+        # Reload chat settings
+        self._load_chat_settings()
+        
+        # Add welcome message if enabled
         if self.display_welcome:
             message = {
                 "role": Role.ASSISTANT,

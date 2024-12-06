@@ -212,6 +212,8 @@ class SettingsTab(QWidget):
             self.welcome_message_input.setEnabled(False)
         else:
             self.welcome_message_input.setEnabled(True)
+        
+        self.settings_manager.set("chat.welcome_style", style)
 
     def _on_display_welcome_changed(self, checked: bool):
         self.settings_manager.set("chat.display_welcome", checked)

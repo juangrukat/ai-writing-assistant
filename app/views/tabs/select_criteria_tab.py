@@ -52,7 +52,6 @@ class SelectCriteriaTab(QWidget):
 
         if folder and os.path.exists(folder):
             try:
-                print(f"Debug: Selected criteria folder: {folder}")
                 self.criteria_folder = folder
                 folder_name = os.path.basename(folder)
                 self.folder_label.setText(f"Criteria Folder: {folder_name}")
@@ -64,22 +63,18 @@ class SelectCriteriaTab(QWidget):
                 
                 subfolders = [d for d in os.listdir(folder) 
                              if os.path.isdir(os.path.join(folder, d))]
-                print(f"Debug: Found subfolders: {subfolders}")
                 
                 if subfolders:
                     self.type_combo.addItems(subfolders)
                     self.type_combo.blockSignals(False)
                     self.type_combo.setCurrentIndex(0)
                     first_type = self.type_combo.currentText()
-                    print(f"Debug: Auto-selecting first type: {first_type}")
                     self._on_type_changed(first_type)
                 else:
-                    print("Debug: No subfolders found, checking root folder")
                     self.type_combo.blockSignals(False)
                     self._update_criteria_sets(folder)
                     
             except Exception as e:
-                print(f"Error setting criteria folder: {str(e)}")
                 self.criteria_display.setPlainText(f"Error setting criteria folder: {str(e)}")
 
     def _on_type_changed(self, criteria_type: str):
@@ -88,7 +83,6 @@ class SelectCriteriaTab(QWidget):
             return
 
         subfolder_path = os.path.join(self.criteria_folder, criteria_type)
-        print(f"Debug: Checking subfolder path: {subfolder_path}")
         
         if not os.path.exists(subfolder_path):
             self.criteria_display.setPlainText("Error: Selected criteria type folder no longer exists.")
@@ -97,21 +91,18 @@ class SelectCriteriaTab(QWidget):
             return
 
         self._save_and_verify_settings('criteria.last_type', criteria_type)
-        print(f"Debug: Updating criteria sets for folder: {subfolder_path}")
         self._update_criteria_sets(subfolder_path)
 
     def _update_criteria_sets(self, folder_path: str, is_restoration: bool = False):
         """Update the criteria sets dropdown based on folder contents."""
         try:
             criteria_files = self._get_criteria_files(folder_path)
-            print(f"Debug: Found criteria files: {criteria_files}")
 
             self.set_combo.blockSignals(True)
             self.set_combo.clear()
             
             if criteria_files:
                 criteria_sets = [os.path.splitext(f)[0] for f in criteria_files]
-                print(f"Debug: Adding criteria sets to combo: {criteria_sets}")
                 self.set_combo.addItems(criteria_sets)
                 
                 if is_restoration:
@@ -133,7 +124,7 @@ class SelectCriteriaTab(QWidget):
                 self._on_set_changed(self.set_combo.currentText())
                 
         except Exception as e:
-            print(f"Error updating criteria sets: {str(e)}")
+            logging.error(f"Error updating criteria sets: {str(e)}")
 
     def _on_set_changed(self, criteria_set: str):
         """Handle criteria set selection."""
@@ -238,7 +229,6 @@ class SelectCriteriaTab(QWidget):
         """Restores the last selected folder and its state."""
         folder = self.settings_manager.get('folders.criteria')
         if folder and os.path.exists(folder):
-            print(f"Debug: Restoring last folder: {folder}")
             self.criteria_folder = folder
             folder_name = os.path.basename(folder)
             self.folder_label.setText(f"Criteria Folder: {folder_name}")
@@ -246,7 +236,6 @@ class SelectCriteriaTab(QWidget):
             # Restore type
             last_type = self.settings_manager.get('criteria.last_type')
             last_set = self.settings_manager.get('criteria.last_set', {})
-            print(f"Debug: Last type: {last_type}, Last set: {last_set}")
             
             # Update type combo box
             self.type_combo.blockSignals(True)
@@ -258,7 +247,6 @@ class SelectCriteriaTab(QWidget):
                 self.type_combo.addItems(subfolders)
                 
                 if last_type and last_type in subfolders:
-                    print(f"Debug: Restoring last type: {last_type}")
                     index = self.type_combo.findText(last_type)
                     if index >= 0:
                         self.type_combo.setCurrentIndex(index)

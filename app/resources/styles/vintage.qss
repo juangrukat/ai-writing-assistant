@@ -1,0 +1,92 @@
+/* Vintage theme - Modern Typewriter-inspired */
+@import 'base.qss';
+
+QWidget {
+    background-color: #F5F5F0;
+    color: #333333;
+}
+
+/* Text editor styling */
+QTextEdit {
+    background-color: #F8F8F3;
+    border: 2px solid #404040;
+    border-radius: 4px;
+    font-family: 'Courier Prime';
+    font-size: 15px;
+    padding: 8px;
+    line-height: 1.6;
+}
+
+/* Button styling */
+QPushButton {
+    background-color: #404040;
+    color: #FFFFFF;
+    border: 2px solid #404040;
+    border-radius: 3px;
+    padding: 6px 16px;
+    font-family: 'Courier Prime';
+    font-weight: bold;
+}
+
+QPushButton:hover {
+    background-color: #2D2D2D;
+    border-color: #2D2D2D;
+}
+
+/* Panel styling */
+#leftPanel, #rightPanel {
+    background-color: #EAEAE5;
+    border-radius: 4px;
+}
+
+#middlePanel {
+    background-color: #F5F5F0;
+}
+
+/* Tab styling */
+QTabWidget::pane {
+    border: 2px solid #404040;
+    border-radius: 4px;
+    background-color: #F8F8F3;
+}
+
+QTabBar::tab {
+    background-color: #EAEAE5;
+    color: #404040;
+    padding: 8px 20px;
+    border: 2px solid #404040;
+    border-bottom: none;
+    margin-right: 2px;
+    font-family: 'Courier Prime';
+    font-weight: bold;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+}
+
+QTabBar::tab:selected {
+    background-color: #404040;
+    color: #FFFFFF;
+}
+
+QTabBar::tab:hover {
+    background-color: #2D2D2D;
+    color: #FFFFFF;
+}
+
+/* Scrollbar styling */
+QScrollBar:vertical {
+    border: none;
+    background-color: #EAEAE5;
+    width: 12px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #404040;
+    border-radius: 6px;
+    min-height: 20px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #2D2D2D;
+}

@@ -1,0 +1,121 @@
+/* Future theme - Neo-minimalist cyberpunk */
+@import 'base.qss';
+
+QWidget {
+    background-color: #0D1117;
+    color: #E2E8F0;
+}
+
+/* Text editor styling */
+QTextEdit {
+    background-color: #161B22;
+    border: 1px solid #30363D;
+    border-radius: 6px;
+    color: #C9D1D9;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 14px;
+    padding: 8px;
+    line-height: 1.6;
+}
+
+QTextEdit:focus {
+    border: 1px solid #58A6FF;
+}
+
+/* Button styling */
+QPushButton {
+    background-color: #238636;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 600;
+}
+
+QPushButton:hover {
+    background-color: #2EA043;
+    border: 1px solid #3FB950;
+}
+
+QPushButton:pressed {
+    background-color: #1F7A31;
+    padding: 9px 15px 7px 17px;
+}
+
+/* Panel styling */
+#leftPanel, #rightPanel {
+    background-color: #161B22;
+    border-radius: 8px;
+    border: 1px solid #30363D;
+}
+
+#middlePanel {
+    background-color: #0D1117;
+}
+
+/* Tab styling */
+QTabWidget::pane {
+    border: 1px solid #30363D;
+    border-radius: 6px;
+    background-color: #161B22;
+}
+
+QTabBar::tab {
+    background-color: #21262D;
+    color: #C9D1D9;
+    padding: 8px 20px;
+    border: 1px solid #30363D;
+    border-bottom: none;
+    margin-right: 2px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+QTabBar::tab:selected {
+    background-color: #238636;
+    color: #FFFFFF;
+    border: 1px solid #2EA043;
+}
+
+QTabBar::tab:hover:!selected {
+    background-color: #2EA043;
+    color: #FFFFFF;
+}
+
+/* Scrollbar styling */
+QScrollBar:vertical {
+    background-color: #161B22;
+    width: 14px;
+    margin: 0px;
+    border-radius: 7px;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #30363D;
+    min-height: 30px;
+    border-radius: 7px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #58A6FF;
+}
+
+/* Selection color */
+QWidget::selection {
+    background-color: #1C4C6E;
+    color: #FFFFFF;
+}
+
+QLineEdit, QTextEdit {
+    selection-background-color: #1C4C6E;
+    selection-color: #FFFFFF;
+}
+
+/* Tooltip styling */
+QToolTip {
+    background-color: #161B22;
+    color: #C9D1D9;
+    border: 1px solid #30363D;
+    border-radius: 4px;
+    padding: 4px;
+}

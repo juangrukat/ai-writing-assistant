@@ -1,0 +1,42 @@
+{
+    "app": {
+        "theme": "clean",
+        "version": "1.0",
+        "panel_sizes": [250, 500, 250],
+        "window": {
+            "size": [1024, 768],
+            "pos": [100, 100],
+            "maximized": false
+        },
+        "settings": {
+            "autosave": true,
+            "language": "en-US"
+        },
+        "tabs": {
+            "left_panel": {
+                "active_tab": 0,
+                "default_tab": 0
+            },
+            "right_panel": {
+                "active_tab": 0,
+                "default_tab": 0
+            }
+        }
+    },
+    "openai": {
+        "api_key": "",
+        "model": "",
+        "temperature": 0.7,
+        "available_models": []
+    },
+    "folders": {
+        "writing_prompts": "",
+        "criteria": "",
+        "save_location": ""
+    },
+    "criteria": {
+        "last_type": "",
+        "last_set": "",
+        "last_file_path": ""
+    }
+}

@@ -7,7 +7,9 @@ import os
 import json
 import logging
 from pathlib import Path
+from typing import Optional
 from app.services.settings_manager import SettingsManager
+from app.config.criteria_config import CriteriaConfig
 
 class SelectCriteriaTab(QWidget):
     """Tab for selecting and managing evaluation criteria."""
@@ -20,29 +22,149 @@ class SelectCriteriaTab(QWidget):
         self.settings_manager = settings_manager
         self.criteria_folder: Optional[Path] = None
         self.selected_criteria: Optional[str] = None
+        self.config = CriteriaConfig()
         self._setup_ui()
         self._restore_last_folder()
 
     def _setup_ui(self):
         """Initialize and setup the UI components."""
         layout = QVBoxLayout()
-        
-        # Folder selection section
         layout.addLayout(self._create_folder_section())
-        
-        # Criteria type section
         layout.addLayout(self._create_type_section())
-        
-        # Criteria set section
         layout.addLayout(self._create_set_section())
         
-        # Criteria display
         self.criteria_display = QTextEdit()
         self.criteria_display.setReadOnly(True)
-        self.criteria_display.setPlaceholderText("Select a criteria set to view details...")
+        self.criteria_display.setPlaceholderText(self.config.PLACEHOLDER_TEXT)
         layout.addWidget(self.criteria_display)
         
         self.setLayout(layout)
+
+    def select_folder(self, folder: str = None):
+        """Handle folder selection for criteria."""
+        if not folder:
+            folder = QFileDialog.getExistingDirectory(
+                self,
+                "Select Criteria Folder",
+                self.settings_manager.get('folders.criteria', ""),
+                QFileDialog.Option.ShowDirsOnly
+            )
+
+        if folder and os.path.exists(folder):
+            try:
+                print(f"Debug: Selected criteria folder: {folder}")
+                self.criteria_folder = folder
+                folder_name = os.path.basename(folder)
+                self.folder_label.setText(f"Criteria Folder: {folder_name}")
+                
+                self._save_and_verify_settings('folders.criteria', folder)
+                
+                self.type_combo.blockSignals(True)
+                self.type_combo.clear()
+                
+                subfolders = [d for d in os.listdir(folder) 
+                             if os.path.isdir(os.path.join(folder, d))]
+                print(f"Debug: Found subfolders: {subfolders}")
+                
+                if subfolders:
+                    self.type_combo.addItems(subfolders)
+                    self.type_combo.blockSignals(False)
+                    self.type_combo.setCurrentIndex(0)
+                    first_type = self.type_combo.currentText()
+                    print(f"Debug: Auto-selecting first type: {first_type}")
+                    self._on_type_changed(first_type)
+                else:
+                    print("Debug: No subfolders found, checking root folder")
+                    self.type_combo.blockSignals(False)
+                    self._update_criteria_sets(folder)
+                    
+            except Exception as e:
+                print(f"Error setting criteria folder: {str(e)}")
+                self.criteria_display.setPlainText(f"Error setting criteria folder: {str(e)}")
+
+    def _on_type_changed(self, criteria_type: str):
+        """Handle criteria type selection."""
+        if not criteria_type or not self.criteria_folder:
+            return
+
+        subfolder_path = os.path.join(self.criteria_folder, criteria_type)
+        print(f"Debug: Checking subfolder path: {subfolder_path}")
+        
+        if not os.path.exists(subfolder_path):
+            self.criteria_display.setPlainText("Error: Selected criteria type folder no longer exists.")
+            self.set_combo.clear()
+            self._clear_criteria_settings()
+            return
+
+        self._save_and_verify_settings('criteria.last_type', criteria_type)
+        print(f"Debug: Updating criteria sets for folder: {subfolder_path}")
+        self._update_criteria_sets(subfolder_path)
+
+    def _update_criteria_sets(self, folder_path: str, is_restoration: bool = False):
+        """Update the criteria sets dropdown based on folder contents."""
+        try:
+            criteria_files = self._get_criteria_files(folder_path)
+            print(f"Debug: Found criteria files: {criteria_files}")
+
+            self.set_combo.blockSignals(True)
+            self.set_combo.clear()
+            
+            if criteria_files:
+                criteria_sets = [os.path.splitext(f)[0] for f in criteria_files]
+                print(f"Debug: Adding criteria sets to combo: {criteria_sets}")
+                self.set_combo.addItems(criteria_sets)
+                
+                if is_restoration:
+                    last_set = self.settings_manager.get('criteria.last_set', {})
+                    if last_set and last_set.get('file_path'):
+                        if os.path.exists(last_set['file_path']):
+                            name = last_set['name']
+                            if name in criteria_sets:
+                                index = self.set_combo.findText(name)
+                                if index >= 0:
+                                    self.set_combo.setCurrentIndex(index)
+                                    self._load_criteria_content(last_set['file_path'])
+
+            self.set_combo.blockSignals(False)
+            
+            # Auto-select first item if none selected
+            if self.set_combo.count() > 0 and self.set_combo.currentText() == "":
+                self.set_combo.setCurrentIndex(0)
+                self._on_set_changed(self.set_combo.currentText())
+                
+        except Exception as e:
+            print(f"Error updating criteria sets: {str(e)}")
+
+    def _on_set_changed(self, criteria_set: str):
+        """Handle criteria set selection."""
+        if not criteria_set or not self.criteria_folder:
+            return
+
+        try:
+            current_type = self.type_combo.currentText()
+            current_folder = os.path.join(self.criteria_folder, current_type) if current_type else self.criteria_folder
+            
+            if not os.path.exists(current_folder):
+                self.criteria_display.setPlainText("Error: Selected folder no longer exists.")
+                self._clear_criteria_settings()
+                return
+
+            file_found = False
+            for ext in self.SUPPORTED_EXTENSIONS:
+                file_path = os.path.join(current_folder, f"{criteria_set}{ext}")
+                if os.path.exists(file_path):
+                    self._load_criteria_content(file_path)
+                    file_found = True
+                    break
+            
+            if not file_found:
+                self.criteria_display.setPlainText("Error: Selected criteria file no longer exists.")
+                self._clear_criteria_settings()
+                self.selected_criteria = None
+
+        except Exception as e:
+            print(f"Error loading criteria content: {str(e)}")
+            self._clear_criteria_settings()
 
     def _create_folder_section(self) -> QHBoxLayout:
         """Create the folder selection section of the UI."""
@@ -111,3 +233,90 @@ class SelectCriteriaTab(QWidget):
     def get_selected_criteria(self) -> str:
         """Get the currently selected criteria content."""
         return self.selected_criteria if self.selected_criteria else ""
+
+    def _restore_last_folder(self):
+        """Restores the last selected folder and its state."""
+        folder = self.settings_manager.get('folders.criteria')
+        if folder and os.path.exists(folder):
+            print(f"Debug: Restoring last folder: {folder}")
+            self.criteria_folder = folder
+            folder_name = os.path.basename(folder)
+            self.folder_label.setText(f"Criteria Folder: {folder_name}")
+            
+            # Restore type
+            last_type = self.settings_manager.get('criteria.last_type')
+            last_set = self.settings_manager.get('criteria.last_set', {})
+            print(f"Debug: Last type: {last_type}, Last set: {last_set}")
+            
+            # Update type combo box
+            self.type_combo.blockSignals(True)
+            self.type_combo.clear()
+            
+            subfolders = [d for d in os.listdir(folder) 
+                         if os.path.isdir(os.path.join(folder, d))]
+            if subfolders:
+                self.type_combo.addItems(subfolders)
+                
+                if last_type and last_type in subfolders:
+                    print(f"Debug: Restoring last type: {last_type}")
+                    index = self.type_combo.findText(last_type)
+                    if index >= 0:
+                        self.type_combo.setCurrentIndex(index)
+                else:
+                    self.type_combo.setCurrentIndex(0)
+                    last_type = self.type_combo.currentText()
+            
+            self.type_combo.blockSignals(False)
+            
+            # Now restore the set if we have a valid type
+            if last_type:
+                subfolder_path = os.path.join(folder, last_type)
+                if os.path.exists(subfolder_path):
+                    self._update_criteria_sets(subfolder_path, is_restoration=True)
+
+    def _load_criteria_content(self, file_path: str):
+        """Load and display criteria content from file."""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                file_type = os.path.splitext(file_path)[1][1:]  # Get extension without dot
+                if file_path.endswith('.json'):
+                    content = json.load(f)
+                    criteria_content = json.dumps(content, indent=2)
+                    description = content.get('description', '')
+                else:
+                    criteria_content = f.read()
+                    lines = criteria_content.split('\n')
+                    description = lines[0][1:].strip() if lines and lines[0].startswith('#') else ''
+                
+                self.criteria_display.setPlainText(criteria_content)
+                self.selected_criteria = criteria_content
+                self.criteria_selected.emit(criteria_content)
+                
+                # Update settings with full criteria information
+                current_type = self.type_combo.currentText()
+                criteria_name = os.path.splitext(os.path.basename(file_path))[0]
+                
+                criteria_info = {
+                    "name": criteria_name,
+                    "description": description,
+                    "category": current_type,
+                    "file_path": file_path,
+                    "file_type": file_type
+                }
+                
+                self._save_and_verify_settings('criteria.last_set', criteria_info)
+                
+        except Exception as e:
+            print(f"Error loading criteria content: {str(e)}")
+            self._clear_criteria_settings()
+
+    def _clear_criteria_settings(self):
+        """Helper method to clear criteria settings."""
+        empty_set = {
+            "name": "",
+            "description": "",
+            "category": "",
+            "file_path": "",
+            "file_type": ""
+        }
+        self._save_and_verify_settings('criteria.last_set', empty_set)

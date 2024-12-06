@@ -8,3 +8,9 @@ class WritingPromptsConfig:
     MAX_PROMPT_LENGTH: int = 5000
     PROMPT_DISPLAY_PLACEHOLDER: str = "Click on 'Get New Prompt' to start..."
     NO_FOLDER_TEXT: str = "No folder selected"
+    MARKDOWN_EXTRAS: List[str] = field(default_factory=lambda: [
+        'fenced-code-blocks',
+        'tables',
+        'break-on-newline',
+        'header-ids'
+    ])

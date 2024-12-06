@@ -5,11 +5,12 @@ from PyQt6.QtWidgets import (
     QPushButton, 
     QLabel, 
     QComboBox, 
-    QTextEdit, 
+    QTextBrowser, 
     QFileDialog, 
     QMessageBox
 )
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import pyqtSignal, Qt
+import markdown2
 import os
 from app.services.settings_manager import SettingsManager
 from app.services.writing_prompts_service import WritingPromptsService
@@ -44,8 +45,11 @@ class WritingPromptsTab(QWidget):
         category_layout.addWidget(self.category_combo)
         layout.addLayout(category_layout)
 
-        self.prompt_display = QTextEdit()
-        self.prompt_display.setReadOnly(True)
+        self.prompt_display = QTextBrowser()
+        self.prompt_display.setOpenExternalLinks(True)
+        self.prompt_display.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextBrowserInteraction
+        )
         self.prompt_display.setPlaceholderText("Select a category and click 'Get New Prompt'...")
         layout.addWidget(self.prompt_display)
 
@@ -83,10 +87,6 @@ class WritingPromptsTab(QWidget):
 
         if folder and os.path.exists(folder):
             try:
-                categories_folder = os.path.join(folder, "categories")
-                if not os.path.exists(categories_folder):
-                    os.makedirs(categories_folder)
-                
                 self.prompts_service.set_prompt_folder(folder)
                 folder_name = os.path.basename(folder)
                 self.folder_label.setText(f"Prompts Folder: {folder_name}")
@@ -120,7 +120,8 @@ class WritingPromptsTab(QWidget):
         
         prompt = self.prompts_service.get_new_prompt(category)
         if prompt:
-            self.prompt_display.setPlainText(prompt)
+            html_content = markdown2.markdown(prompt)
+            self.prompt_display.setHtml(html_content)
         else:
             self.prompt_display.setPlainText("No prompts found in this category.")
 
@@ -131,9 +132,10 @@ class WritingPromptsTab(QWidget):
         self.prompt_display.setPlaceholderText("Click 'Get New Prompt' to start...")
 
     def _use_selected_prompt(self):
-        prompt = self.prompt_display.toPlainText()
-        if prompt and prompt != "No prompts found in this category.":
-            self.prompt_selected.emit(prompt)
+        category = self.category_combo.currentText()
+        current_prompt = self.prompts_service.get_current_prompt(category)
+        if current_prompt and current_prompt != "No prompts found in this category.":
+            self.prompt_selected.emit(current_prompt)
 
     def _clear_selected_prompt(self):
         self.prompt_display.clear()

@@ -57,3 +57,6 @@ qt_resource_data
 qt_resource_struct
 # Exclude the specific file
 ui/resources_rc.py
+tests/
+myproject.pro
+test_resources.py
